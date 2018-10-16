@@ -76,4 +76,3 @@ if __name__ == "__main__":
 	kd_tree = KDTree(points_list,leaf_size = 2)
 	print(kd_tree)
 	
-	
