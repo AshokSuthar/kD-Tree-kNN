@@ -50,7 +50,10 @@ def KDTree(point_list, cut_dim=0, leaf_size=5):
 		mid = 0
 		#print("Before")
 		#print(point_list)
-		point_list.view('f8,f8').sort(order=['f0'], axis=0)
+		if cut_dim == 0:
+			point_list.view('f8,f8').sort(order=['f0'], axis=0)
+		else:
+			point_list.view('f8,f8').sort(order=['f1'], axis=0)
 		#point_list.sort(axis = cut_dim)
 		#print("After")
 		#print(point_list)
