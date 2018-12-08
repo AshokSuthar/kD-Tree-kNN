@@ -121,11 +121,14 @@ def KNN(root, query_point, k):
 		#printing the knn
 		print(nn,end="\n\n")
 
-#function to generate random points in 2 dimensions. change to generate points in different dimensions or numbers.
-def generate_random_points(num_points):
+#function to generate 'num_points' random points of 'dim' dimensions.
+def generate_random_points(num_points, dim):
 	points = []
 	for _ in range(num_points):
-		points.append((100*np.random.rand(), 100*np.random.rand(), 100*np.random.rand(), 100*np.random.rand(),100*np.random.rand(), 100*np.random.rand(),100*np.random.rand(), 100*np.random.rand(),100*np.random.rand(), 100*np.random.rand()))
+		pt = []
+		for _ in range(dim):
+			pt.append(100*np.random.rand())
+		points.append(pt)
 	return points
 
 #checking runtime
@@ -133,23 +136,20 @@ start_time = time.time()
 
 #where execution starts
 if __name__ == "__main__":
-	print("Building the kdTree with given set of Points:")
+	print("Building the kdTree using Magnitude of pointVectors with given set of Points:")
 	#calling generate_random_points(num) for num of points to be generated.
-	points_list = generate_random_points(50)
+	points_list = generate_random_points(500,10)
 	points_list = np.array(points_list)
 	#giving leaf size for the tree, to split further the tree should have more points than the leaf_size given here.
-	leaf_size = 5
-	points_list = sorted(points_list, key = mag)
+	leaf_size = int(input("Enter the value of leaf_size for the kD_Tree: "))
 	kd_tree = KDTree(points_list,leaf_size)
 	#printing kdTree
 	#print(kd_tree,end="\n\n")
-	#query_point = list(map(float,input("Enter the query point: ").split()))
+	query_point = list(map(float,input("Enter the query point(same dimensions as datapoints): ").split()))
 	#number of neighbors to search for, value less then number of points in leaf
-	#k = int(input("Enter the value of 'k'(less than "+str(leaf_size)+"):"))
-	#KNN(kd_tree, query_point, k)
-	KNN(kd_tree, [5.0, 6.0,5.0, 6.0,5.0, 6.0,5.0, 6.0,5.0, 6.0], 3)
+	k = int(input("Enter the value of 'k'(less than "+str(leaf_size)+"):"))
+	KNN(kd_tree, query_point, k)
 	print("--- %s seconds ---" % (time.time() - start_time))
-	
 
 
 

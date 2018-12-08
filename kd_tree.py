@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import time
 
 #class for internal nodes of the kdTree
 #holds, cut_dim value at each node, along with cut_point itself for reference.
@@ -68,7 +69,10 @@ def KDTree(point_list, leaf_size, cut_dim=0):
 		num_dimensions = len(point_list[0])
 		mid = 0
 		#sorting method is used for splitting here. 
-		point_list.view('f8,f8').sort(order=['f'+str(cut_dim)], axis=0)
+		view_str = 'f8'
+		for _ in range(1,num_dimensions):
+			view_str += ',f8'
+		point_list.view(view_str).sort(order=['f'+str(cut_dim)], axis=0)
 		#middle element from sorted list is picked as root to split upn
 		mid = int(len(point_list) / 2)
 		cut_point = point_list[mid]
@@ -114,29 +118,35 @@ def KNN(root, query_point, k):
 		#printing the knn
 		print(nn,end="\n\n")
 
-#function to generate random points in 2 dimensions. change to generate points in different dimensions or numbers.
-def generate_random_points(num_points):
+#function to generate 'num_points' random points of 'dim' dimensions.
+def generate_random_points(num_points, dim):
 	points = []
 	for _ in range(num_points):
-		points.append((100*np.random.rand(), 100*np.random.rand()))
+		pt = []
+		for _ in range(dim):
+			pt.append(100*np.random.rand())
+		points.append(pt)
 	return points
+
+#starting time count
+start_time = time.time()
 
 #where execution starts
 if __name__ == "__main__":
-	print("Building the kdTree with given set of Points:")
+	print("Building the kdTree with given set of Points using splitting according to a dimension at each level:")
 	#calling generate_random_points(num) for num of points to be generated.
-	points_list = generate_random_points(10)
+	points_list = generate_random_points(500,10)
 	points_list = np.array(points_list)
 	#giving leaf size for the tree, to split further the tree should have more points than the leaf_size given here.
-	leaf_size = 2
+	leaf_size = int(input("Enter the value of leaf_size for the kD_Tree: "))
 	kd_tree = KDTree(points_list,leaf_size)
 	#printing kdTree
-	print(kd_tree,end="\n\n")
-	query_point = list(map(float,input("Enter the query point: ").split()))
+	#print(kd_tree,end="\n\n")
+	query_point = list(map(float,input("Enter the query point(same dimensions as datapoints): ").split()))
 	#number of neighbors to search for, value less then number of points in leaf
 	k = int(input("Enter the value of 'k'(less than "+str(leaf_size)+"):"))
 	KNN(kd_tree, query_point, k)
-	
+	print("--- %s seconds ---" % (time.time() - start_time))
 
 
 
