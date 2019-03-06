@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import math
 import time
 
@@ -48,7 +49,7 @@ class Lnode:
 #KDTree function to build a Kd tree of a given point_list, cut_dim for dimension to split on, and max number of points a leaf can hold is given by leaf_size.
 #splitting stops if a node has points less than the leaf_size
 def KDTree(point_list, leaf_size, cut_dim=0):
-	root = None
+	#root = None
 	cut_val = 0
 	left_child = None
 	right_child = None
@@ -72,10 +73,14 @@ def KDTree(point_list, leaf_size, cut_dim=0):
 		view_str = 'f8'
 		for _ in range(1,num_dimensions):
 			view_str += ',f8'
-		point_list.view(view_str).sort(order=['f'+str(cut_dim)], axis=0)
+		#point_list.view(view_str).sort(order=['f'+str(cut_dim)], axis=0)
+#change sorting here to suit the input data
+		point_list[point_list[:,cut_dim].argsort()]
 		#middle element from sorted list is picked as root to split upn
 		mid = int(len(point_list) / 2)
-		cut_point = point_list[mid]
+		cut_point = point_list[mid].copy()
+		print("cut point ",end=" ") 
+		print(cut_point)
 		#next_dimension to split upon
 		next_dim = (cut_dim + 1) % num_dimensions
 		#recursive calls for the nodes(building kdTree) if not a leaf node
@@ -99,6 +104,7 @@ def KNN(root, query_point, k):
 	else:
 		# Creating a distance list from the leaf nodes
 		closest_points = root.point_list
+		#futurework: add root node of leaf nodes also in here for optimal results
 		distance = []
 		#calculating distance of all the points in leaf node from the query_point and adding into distance list
 		for i in range(len(closest_points)):
@@ -118,37 +124,89 @@ def KNN(root, query_point, k):
 		#printing the knn
 		print(nn,end="\n\n")
 
-#function to generate 'num_points' random points of 'dim' dimensions.
-def generate_random_points(num_points, dim):
-	points = []
-	for _ in range(num_points):
-		pt = []
-		for _ in range(dim):
-			pt.append(100*np.random.rand())
-		points.append(pt)
-	return points
 
-#starting time count
-start_time = time.time()
+#function to generate 'num_points' random points of 'dim' dimensions.
+def generate_data(data_type):
+	if data_type == 1:
+		df = pd.read_csv('DataSets/Lung.txt',sep="\s+",header=None)
+		print("Taking Lung(181x12533) as input data")
+		data = df.iloc[:, :12533]
+		#converting to numpy array
+		data = np.array(data)
+	elif data_type == 2:
+		df = pd.read_csv('DataSets/Leukimia.txt',sep="\s+",header=None)
+		print("Taking Leukimia(72x7129) as input data")
+		data = df.iloc[:, :7129]
+		#converting to numpy array
+		data = np.array(data)
+	elif data_type == 3:
+		df = pd.read_csv('DataSets/GCM.txt',sep="\s+",header=None)
+		print("Taking GCM(16064x280) as input data")
+		data = df.iloc[:, :280]
+		#converting to numpy array
+		data = np.array(data).transpose()
+	elif data_type == 4:
+		df = pd.read_csv('DataSets/Prostate.txt',sep="\s+",header=None)
+		print("Taking Prostate(181x12600) as input data")
+		data = df.iloc[:, :12600]
+		#converting to numpy array
+		data = np.array(data)
+	else:
+		print("Generating normalized random data(1000x10000) as input data")
+		data = np.random.rand(10000,1000)
+	return data
+
 
 #where execution starts
 if __name__ == "__main__":
-	print("Building the kdTree with given set of Points using splitting according to a dimension at each level:")
-	#calling generate_random_points(num) for num of points to be generated.
-	points_list = generate_random_points(500,10)
-	points_list = np.array(points_list)
+	print("Building the kdTree using Magnitude of pointVectors with given set of Points:")
+	data_type = int(input("Choose appropriate input\n 1. Lung data set \n 2. Leukimia\n 3. GCM\n 4. Prostate \n 0. randomly generated data:\n"))
+	#calling generate_data() for data to be generated/read.
+	data = generate_data(data_type)
+	n,d,k = 10000,1000,5
+	if data_type == 1: 
+		file_name = "query_point_Lung.txt"
+		dim = 12533
+	elif data_type == 2: 
+		file_name = "query_point_Leukimia.txt"
+		dim = 7129
+	elif data_type == 3: 
+		file_name = "query_point_GCM.txt"
+		dim = 16064
+	elif data_type == 4: 
+		file_name = "query_point_Prostate.txt"
+		dim = 12600
+	else:
+		file_name = None
+		
+	if file_name != None:
+		df = pd.read_csv(file_name, sep="\s+", header=None)
+		query_point = df.iloc[:, :dim]
+		query_point = np.array(query_point)
+	else:
+		data = np.random.rand(n,d)
+		query_point = np.random.rand(d)
 	#giving leaf size for the tree, to split further the tree should have more points than the leaf_size given here.
-	leaf_size = int(input("Enter the value of leaf_size for the kD_Tree: "))
-	kd_tree = KDTree(points_list,leaf_size)
+	#leaf_size = int(input("Enter the value of leaf_size for the kD_Tree: "))
+	leaf_size = 20
+	#checking runtime
+	start_time = time.time()
+	print(data.dtype)
+	#starting Index Build (offline Phase)
+	kd_tree = KDTree(data,leaf_size)
+	print("---time in Index Building (Offline Phase) %s seconds ---" % (time.time() - start_time))
 	#printing kdTree
 	#print(kd_tree,end="\n\n")
-	query_point = list(map(float,input("Enter the query point(same dimensions as datapoints): ").split()))
+	query_point = np.array(query_point)
 	#number of neighbors to search for, value less then number of points in leaf
-	k = int(input("Enter the value of 'k'(less than "+str(leaf_size)+"):"))
-	KNN(kd_tree, query_point, k)
-	print("--- %s seconds ---" % (time.time() - start_time))
-
-
+	#k = int(input("Enter the value of 'k'(less than "+str(leaf_size)+"):"))
+	k=5
+	#checking runtime
+	start_time = time.time()
+	#Querying for query_point
+	dist = KNN(kd_tree, query_point, k)
+	print(dist)
+	print("--- %s seconds ---" % ((time.time() - start_time)))
 
 
 
