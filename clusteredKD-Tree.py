@@ -25,7 +25,7 @@ def generate_data(data_type):
 	#print(x)
 	rows = data_df.iloc[:] #all the rows in selected dataset
 	data_size = len(rows)#calculating #no. of entries in data(no. of rows)
-	no_clusters = 200# change this
+	no_clusters = int(data_size/20)# change this
 	print(no_clusters)
 	global np_data #using global np_data variable
 	np_data = np.array(data_df) #converting data to numpy array

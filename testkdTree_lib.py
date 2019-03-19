@@ -19,10 +19,14 @@ def generate_data(filename):
 if __name__ == "__main__":
 	print("Building the kdTree based on Meenawongtvana Paper (1999):")
 	#calling generate_data() for data to be generated/read.
+	if len(sys.argv) != 2:
+		print("use python3 programname.py <dataset_name> to run.")
+		exit()
 	filename = sys.argv[1]
 	start_time = time.time()
 	data = generate_data(filename)
 	df = pd.read_csv(filename,sep="\s+",header=None)
+	print("shape of the input data",df.shape)
 	dim = df.shape[1]
 	rows = df.shape[0]
 	query_point = df.iloc[rows-1:rows, 2:dim]
