@@ -17,11 +17,16 @@ def generate_data(filename):
 	#	pass
 	#filename = sys.argv[1] #dataset to calculate coreset of
 	#output = sys.argv[2] #output file to print probability distribution values
-
-	dataset_df = pd.read_csv(filename,sep="\s+",header=None)
-	dim = dataset_df.shape[1]
-	rows = dataset_df.shape[0]
-	data_df = dataset_df.iloc[:rows-1, 2:dim]
+	if filename == "DataSets/pd_speech_features.csv":
+		dataset_df = pd.read_csv(filename,sep=",",header=[0,1])
+		dim = dataset_df.shape[1]
+		rows = dataset_df.shape[0]
+		data_df = dataset_df.iloc[2:750, 2:dim-1]
+	else:
+		dataset_df = pd.read_csv(filename,sep="\s+",header=None)
+		dim = dataset_df.shape[1]
+		rows = dataset_df.shape[0]
+		data_df = dataset_df.iloc[:rows-1, 2:dim]
 	#print(data_df.head())
 	#print(x)
 	rows = data_df.iloc[:] #all the rows in selected dataset
@@ -56,10 +61,16 @@ if __name__ == "__main__":
 	start_time = time.time()
 	data = generate_data(filename)
 	n,d,k = 10000,1000,5
-	df = pd.read_csv(filename,sep="\s+",header=None)
-	dim = df.shape[1]
-	rows = df.shape[0]
-	query_point = np.array(df.iloc[rows-1:rows, 2:dim])
+	if filename == "DataSets/pd_speech_features.csv":
+		dataset_df = pd.read_csv(filename,sep=",",header=[0,1])
+		dim = dataset_df.shape[1]
+		rows = dataset_df.shape[0]
+		query_point = np.array(dataset_df.iloc[rows-1:rows, 2:dim-1])
+	else:
+		dataset_df = pd.read_csv(filename,sep="\s+",header=None)
+		dim = dataset_df.shape[1]
+		rows = dataset_df.shape[0]
+		query_point = np.array(dataset_df.iloc[rows-1:rows, 2:dim])
 		
 	#if file_name != None:
 	#	df = pd.read_csv(file_name, sep="\s+", header=None)

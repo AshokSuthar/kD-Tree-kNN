@@ -12,20 +12,26 @@ centroids = []
 np_data = []
 
 #function to generate 'num_points' random points of 'dim' dimensions.
-def generate_data(data_type):
+def generate_data(filename):
 	#if data_type == 1:
 	#	pass
-	filename = sys.argv[1] #dataset to calculate coreset of
+	#filename = sys.argv[1] #dataset to calculate coreset of
 	#output = sys.argv[2] #output file to print probability distribution values
-
-	dataset_df = pd.read_csv(filename,sep=",",header=[0,1])
-	dim = dataset_df.shape[1]
-	data_df = dataset_df.iloc[2:750, 2:dim-1]
+	if filename == "DataSets/pd_speech_features.csv":
+		dataset_df = pd.read_csv(filename,sep=",",header=[0,1])
+		dim = dataset_df.shape[1]
+		rows = dataset_df.shape[0]
+		data_df = dataset_df.iloc[2:750, 2:dim-1]
+	else:
+		dataset_df = pd.read_csv(filename,sep="\s+",header=None)
+		dim = dataset_df.shape[1]
+		rows = dataset_df.shape[0]
+		data_df = dataset_df.iloc[:rows-1, 2:dim]
 	#print(data_df.head())
 	#print(x)
 	rows = data_df.iloc[:] #all the rows in selected dataset
 	data_size = len(rows)#calculating #no. of entries in data(no. of rows)
-	no_clusters = int(data_size/20)# change this
+	no_clusters = int(data_size/20)#20 check this
 	print(no_clusters)
 	global np_data #using global np_data variable
 	np_data = np.array(data_df) #converting data to numpy array
@@ -47,31 +53,24 @@ def generate_data(data_type):
 
 
 if __name__ == "__main__":
-	print("Building the kdTree based on Meenawongtvana Paper (1999):")
-	data_type = int(input("Choose appropriate input\n 1. Lung data set \n 2. Leukimia\n 3. GCM\n 4. Prostate \n 0. randomly generated data:\n"))
 	#calling generate_data() for data to be generated/read.
+	if len(sys.argv) != 2:
+		print("use python3 programname.py <dataset_name> to run.")
+		exit()
+	filename = sys.argv[1] #dataset to calculate coreset of
 	start_time = time.time()
-	data = generate_data(data_type)
+	data = generate_data(filename)
 	n,d,k = 10000,1000,5
-	if data_type == 1: 
-		file_name = "query_point_Lung.txt"
-		dim = 12533
-	elif data_type == 2: 
-		file_name = "query_point_Leukimia.txt"
-		dim = 7129
-	elif data_type == 3: 
-		file_name = "query_point_GCM.txt"
-		dim = 280
-	elif data_type == 4: 
-		file_name = "query_point_Prostate.txt"
-		dim = 12600
-	elif data_type == 6: 
-		#file_name = "DataSets/bio_test.dat"
-		df = pd.read_csv('DataSets/pd_speech_features.csv',sep=",",header=[0,1])
-		dim = df.shape[1]
-		query_point = np.array(df.iloc[752:753, 2:dim-1])
+	if filename == "DataSets/pd_speech_features.csv":
+		dataset_df = pd.read_csv(filename,sep=",",header=[0,1])
+		dim = dataset_df.shape[1]
+		rows = dataset_df.shape[0]
+		query_point = np.array(dataset_df.iloc[rows-1:rows, 2:dim-1])
 	else:
-		file_name = None
+		dataset_df = pd.read_csv(filename,sep="\s+",header=None)
+		dim = dataset_df.shape[1]
+		rows = dataset_df.shape[0]
+		query_point = np.array(dataset_df.iloc[rows-1:rows, 2:dim])
 		
 	#if file_name != None:
 	#	df = pd.read_csv(file_name, sep="\s+", header=None)
@@ -86,12 +85,12 @@ if __name__ == "__main__":
 	#start_time = time.time()
 	#building tree based on given points_list and leaf_size
 	print("data dimensions: "+str(data.shape))
-	tree = spatial.KDTree(data, leafsize=5)
+	tree = spatial.KDTree(data, leafsize=2)
 	#time in building index(offlinePhase)
 	print("---time in building index(offlinePhase) %s seconds ---" % (time.time() - start_time))
 	#starting time count
 	start_time = time.time()
-	dist,indices = (tree.query(query_point, k = 4))
+	dist,indices = (tree.query(query_point, k = 2))
 	#finding which cluster this nearest_point belongs to.
 	values = []
 	#print(centroids)
