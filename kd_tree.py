@@ -1,3 +1,5 @@
+#Program: A self implemented basic kd_tree algorithm
+
 import numpy as np
 import pandas as pd
 import math
@@ -95,6 +97,7 @@ def KNN(root, query_point, k):
 	#otherwise to the right_child and resume search
 	if isinstance(root, Inode):
 		axis = root.cut_dim
+		print(root.cut_point[axis]," query ", query_point)
 		if root.cut_point[axis] > query_point[axis]:
 			KNN(root.left_child, query_point, k)
 		else:
@@ -122,15 +125,17 @@ def KNN(root, query_point, k):
 			#print(x)
 			nn.append(closest_points[int(x[1])])
 		#printing the knn
-		print(nn,end="\n\n")
+		#print(nn,end="\n\n")
+		print(distance)
 
 
 #function to generate 'num_points' random points of 'dim' dimensions.
 def generate_data(data_type):
 	if data_type == 1:
 		df = pd.read_csv('DataSets/Lung.txt',sep="\s+",header=None)
+		data_size = df.shape[0]
 		print("Taking Lung(181x12533) as input data")
-		data = df.iloc[:, :12533]
+		data = df.iloc[:data_size-1, :12533]
 		#converting to numpy array
 		data = np.array(data)
 	elif data_type == 2:
@@ -165,27 +170,11 @@ if __name__ == "__main__":
 	data = generate_data(data_type)
 	n,d,k = 10000,1000,5
 	if data_type == 1: 
-		file_name = "query_point_Lung.txt"
-		dim = 12533
-	elif data_type == 2: 
-		file_name = "query_point_Leukimia.txt"
-		dim = 7129
-	elif data_type == 3: 
-		file_name = "query_point_GCM.txt"
-		dim = 16064
-	elif data_type == 4: 
-		file_name = "query_point_Prostate.txt"
-		dim = 12600
-	else:
-		file_name = None
-		
-	if file_name != None:
-		df = pd.read_csv(file_name, sep="\s+", header=None)
-		query_point = df.iloc[:, :dim]
-		query_point = np.array(query_point)
-	else:
-		data = np.random.rand(n,d)
-		query_point = np.random.rand(d)
+		df = pd.read_csv('DataSets/Lung.txt',sep="\s+",header=None)
+		data_size = df.shape[0]
+		print("Taking Lung(181x12533) as input data")
+		query_point = df.iloc[data_size-1:data_size, :12533]
+	query_point = np.array(query_point)[0]
 	#giving leaf size for the tree, to split further the tree should have more points than the leaf_size given here.
 	#leaf_size = int(input("Enter the value of leaf_size for the kD_Tree: "))
 	leaf_size = 20

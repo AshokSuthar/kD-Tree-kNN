@@ -18,7 +18,10 @@ def generate_data(filename, m):
 	#filename = sys.argv[1] #dataset to calculate coreset of
 	#output = sys.argv[2] #output file to print probability distribution values
 
-	dataset_df = pd.read_csv(filename,sep="\s+",header = None)
+	if filename == "DataSets/bio_train.csv":
+		dataset_df = pd.read_csv(filename,sep="\s+",header = None)
+	else:
+		dataset_df = pd.read_excel(filename,sep="\s+",header = 0)
 
 	dim = dataset_df.shape[1]
 	rows = dataset_df.shape[0]
@@ -27,11 +30,12 @@ def generate_data(filename, m):
 	#print(class_df)
 	#print(data_df.head())
 	rows = data_df.iloc[:] #all the rows in selected dataset
+	#print(data_df)
 	data_size = len(rows) #calculating #no. of entries in data(no. of rows)
 	if filename == "DataSets/bio_train.csv":
 		data = np.array(data_df.iloc[:,3:dim]) # choosing dataset without class
 	else:
-		data = np.array(data_df.iloc[:,1:dim]) # choosing dataset without class column
+		data = np.array(data_df.iloc[:,1:dim-1]) # choosing dataset without class column
 	#print(data)
 	data_mean = np.mean(data, axis = 0)
 	#print(data_mean)
@@ -81,19 +85,22 @@ if __name__ == "__main__":
 	start_time = time.time()
 	data_with_class = generate_data(filename, m) #dataset with class variables
 	dim = data_with_class.shape[1]
+	#print(data_with_class)
 	if filename == "DataSets/bio_train.csv":
 		data = data_with_class.iloc[:,3:dim] #data without class variable
+		df = pd.read_csv(filename,sep="\s+")
 	else:
-		data = data_with_class.iloc[:,1:dim] #data without class variable
-	df = pd.read_csv(filename,sep="\s+")
+		data = data_with_class.iloc[:,1:dim-1] #data without class variable
+		df = pd.read_excel(filename,sep="\s+")
+	#df = pd.read_csv(filename,sep="\s+")
 	dim = df.shape[1]
 	rows = df.shape[0]
-	query_point_with_class = df.iloc[rows-4:rows-3, :dim] #query_point dataframe with class
+	query_point_with_class = df.iloc[rows-2:rows-1, :dim] #query_point dataframe with class
 	#building tree based on given points_list and leaf_size
 	if filename == "DataSets/bio_train.csv":
 		query_point = np.array(query_point_with_class.iloc[:,3:dim]) # using query_point without class variable
 	else:
-		query_point = np.array(query_point_with_class.iloc[:,1:dim]) # using query_point without class variable
+		query_point = np.array(query_point_with_class.iloc[:,1:dim-1]) # using query_point without class variable
 	#print("Data dimensions: "+str(data.shape))
 	tree = spatial.KDTree(data, leafsize=3)
 	#time in building index(offlinePhase)
