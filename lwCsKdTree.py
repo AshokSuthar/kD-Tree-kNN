@@ -20,8 +20,10 @@ def generate_data(filename, m):
 
 	if filename == "DataSets/bio_train.csv":
 		dataset_df = pd.read_csv(filename,sep="\s+",header = None)
-	else:
+	elif filename == "DataSets/default of credit card clients.xls":
 		dataset_df = pd.read_excel(filename,sep="\s+",header = 0)
+	elif filename == "DataSets/spambase/spambase.data":
+		dataset_df = pd.read_csv(filename,sep=",",header = None)
 
 	dim = dataset_df.shape[1]
 	rows = dataset_df.shape[0]
@@ -34,8 +36,10 @@ def generate_data(filename, m):
 	data_size = len(rows) #calculating #no. of entries in data(no. of rows)
 	if filename == "DataSets/bio_train.csv":
 		data = np.array(data_df.iloc[:,3:dim]) # choosing dataset without class
-	else:
+	elif filename == "DataSets/default of credit card clients.xls":
 		data = np.array(data_df.iloc[:,1:dim-1]) # choosing dataset without class column
+	elif filename == "DataSets/spambase/spambase.data":
+		data = np.array(data_df.iloc[:,:dim-1]) # choosing dataset without class column
 	#print(data)
 	data_mean = np.mean(data, axis = 0)
 	#print(data_mean)
@@ -89,9 +93,13 @@ if __name__ == "__main__":
 	if filename == "DataSets/bio_train.csv":
 		data = data_with_class.iloc[:,3:dim] #data without class variable
 		df = pd.read_csv(filename,sep="\s+")
-	else:
+	elif filename == "DataSets/default of credit card clients.xls":
 		data = data_with_class.iloc[:,1:dim-1] #data without class variable
 		df = pd.read_excel(filename,sep="\s+")
+	elif filename == "DataSets/spambase/spambase.data":
+		data = data_with_class.iloc[:,:dim-1] #data without class variable
+		df = pd.read_csv(filename,sep=",")
+	
 	#df = pd.read_csv(filename,sep="\s+")
 	dim = df.shape[1]
 	rows = df.shape[0]
@@ -99,8 +107,10 @@ if __name__ == "__main__":
 	#building tree based on given points_list and leaf_size
 	if filename == "DataSets/bio_train.csv":
 		query_point = np.array(query_point_with_class.iloc[:,3:dim]) # using query_point without class variable
-	else:
+	elif filename == "DataSets/default of credit card clients.xls":
 		query_point = np.array(query_point_with_class.iloc[:,1:dim-1]) # using query_point without class variable
+	elif filename == "DataSets/spambase/spambase.data":
+		query_point = np.array(query_point_with_class.iloc[:,:dim-1]) # using query_point without class variable
 	#print("Data dimensions: "+str(data.shape))
 	tree = spatial.KDTree(data, leafsize=3)
 	#time in building index(offlinePhase)
