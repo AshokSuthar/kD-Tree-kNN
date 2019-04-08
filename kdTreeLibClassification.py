@@ -1,9 +1,11 @@
+#make sure appropriate class column in getting compared with the end results. as datasets have different columns as class. some has last column as class, some have 3rd columns etc.
 import numpy as np
 import pandas as pd
 import math
 import time
 import sys
 from scipy import spatial
+from collections import Counter
 
 #function to generate 'num_points' random points of 'dim' dimensions.
 def generate_data(filename):
@@ -14,11 +16,11 @@ def generate_data(filename):
 		dataset_df = pd.read_csv(filename,sep="\s+",header = None)
 	elif filename == "DataSets/default of credit card clients.xls":
 		dataset_df = pd.read_excel(filename,sep="\s+",header = 0)
-	elif filename == "DataSets/spambase/spambase.data":
+	elif filename == "DataSets/spambase/spambaseTrainTest.data":
 		dataset_df = pd.read_csv(filename,sep=",",header = None)
 	dim = dataset_df.shape[1]
 	rows = dataset_df.shape[0]
-	data_df = dataset_df.iloc[:rows-10, :dim] #full data with class values
+	data_df = dataset_df.iloc[:rows-1000, :dim] #full data with class values
 	return data_df
 
 
@@ -37,43 +39,59 @@ if __name__ == "__main__":
 	elif filename == "DataSets/default of credit card clients.xls":
 		data = data_with_class.iloc[:,1:dim-1] #data without class variable
 		df = pd.read_excel(filename,sep="\s+")
-	elif filename == "DataSets/spambase/spambase.data":
+	elif filename == "DataSets/spambase/spambaseTrainTest.data":
 		data = data_with_class.iloc[:,:dim-1] #data without class variable
 		df = pd.read_csv(filename,sep=",")
 	dim = df.shape[1]
 	rows = df.shape[0]
-	query_point_with_class = df.iloc[rows-2:rows-1, :dim] #query_point dataframe with class
-	#building tree based on given points_list and leaf_size
-	if filename == "DataSets/bio_train.csv":
-		query_point = np.array(query_point_with_class.iloc[:,3:dim]) # using query_point without class variable
-	elif filename == "DataSets/default of credit card clients.xls":
-		query_point = np.array(query_point_with_class.iloc[:,1:dim-1]) # using query_point without class variable
-	elif filename == "DataSets/spambase/spambase.data":
-		query_point = np.array(query_point_with_class.iloc[:,:dim-1]) # using query_point without class variable
-	#print("Data dimensions: "+str(data.shape))
 	tree = spatial.KDTree(data, leafsize=3)
 	#time in building index(offlinePhase)
 	print("---time in building index(offlinePhase) %s seconds ---" % (time.time() - start_time))
-	#starting time count
-	start_time = time.time()
-	dist,indices = (tree.query(query_point, k = 3))
-	#printing nearest neighbors
-	#list of indices is indices[0]
-	print("Nearest Points to the query are: ")
-	for index in indices[0]:
-		#print(tree.data[index])
-		#print(tree.data[index])
-		print(np.array(data_with_class.iloc[index]))
-	print("Query_point is: ")
-	print(np.array(query_point_with_class))
-	print("--- %s seconds ---" % ((time.time() - start_time)))
-	#start_time = time.time()
-	#making 1000 queries
-	#for _ in range(1000):
-	#	dist,indices = (tree.query(query_point, k = 5))
+	rightGuessCount = 0
+	maxTime = -1000;
+	minTime = 1000;
+	totalTime = 0;
+	for i in range(1,1000):
+		query_point_with_class = df.iloc[rows-i:rows-(i-1), :dim] #query_point dataframe with class
+		#building tree based on given points_list and leaf_size
+		if filename == "DataSets/bio_train.csv":
+			query_point = np.array(query_point_with_class.iloc[:,3:dim]) # using query_point without class variable
+		elif filename == "DataSets/default of credit card clients.xls":
+			query_point = np.array(query_point_with_class.iloc[:,1:dim-1]) # using query_point without class variable
+		elif filename == "DataSets/spambase/spambaseTrainTest.data":
+			query_point = np.array(query_point_with_class.iloc[:,:dim-1]) # using query_point without class variable
+		#print("Data dimensions: "+str(data.shape))
+		#starting time count
+		start_time = time.time()
+		k = 3
+		dist,indices = (tree.query(query_point, k))
+		#printing nearest neighbors
 		#list of indices is indices[0]
-	#	for index in indices[0]:
+		nnClassList = []
+		#print("Nearest Points to the query are: ")
+		for index in indices[0]:
 			#print(tree.data[index])
-	#		temp = math.sqrt(np.sum(np.square(tree.data[index]-query_point)))
-	#print("---1000 Queries time =  %s seconds ---" % ((time.time() - start_time)))
-
+			#print(tree.data[index])
+			nnClassList = np.hstack([nnClassList, np.array(data_with_class.iloc[index][dim-1])]) #change to appropriate class column based on the dataset
+		#print(nnClassList)
+		uniqw, inverse = np.unique(nnClassList, return_inverse=True)
+		#print("unique inverse ",uniqw, inverse)
+		arr = np.bincount(inverse)
+		indexOfMaxOccur = np.where(arr == max(np.bincount(inverse)))
+		newClass = uniqw[indexOfMaxOccur]
+		#print ("Assigned Class: ",newClass)
+		#print("Query_point class is: ")
+		aClass = np.array(query_point_with_class)[0][dim-1] #change to appropriate class column based on the dataset
+		#print(aClass)
+		if aClass == newClass:
+			rightGuessCount += 1
+			#print("right ", rightGuessCount, "Times")
+		#else:
+			#print("WRONG WRONG WRONG WRONG WRONG WRONG WRONG WRONG WRONG")
+		totalTime += (time.time() - start_time)
+		if maxTime < (time.time() - start_time):
+			maxTime = (time.time() - start_time)
+		if minTime > (time.time() - start_time):
+			minTime = (time.time() - start_time)
+		#print("--- %s seconds ---" % ((time.time() - start_time)))
+	print("RightGuesses: ", rightGuessCount, " MaxTime: ",maxTime, " MinTime: ",minTime, " AvgTime: ",totalTime/1000)
