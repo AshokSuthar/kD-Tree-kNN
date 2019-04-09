@@ -103,7 +103,8 @@ if __name__ == "__main__":
 	#df = pd.read_csv(filename,sep="\s+")
 	dim = df.shape[1]
 	rows = df.shape[0]
-	tree = spatial.KDTree(data, leafsize=3)
+	leafsize = 50
+	tree = spatial.KDTree(data, leafsize)
 	#time in building index(offlinePhase)
 	print("---time in building index(offlinePhase) %s seconds ---" % (time.time() - start_time))
 	rightGuessCount = 0
@@ -122,25 +123,29 @@ if __name__ == "__main__":
 		#print("Data dimensions: "+str(data.shape))
 		#starting time count
 		start_time = time.time()
-		k = 3
+		k = 50
 		dist,indices = (tree.query(query_point, k))
 		#printing nearest neighbors
 		#list of indices is indices[0]
 		nnClassList = []
 		#print("Nearest Points to the query are: ")
 		for index in indices[0]:
-			#print(tree.data[index])
-			#print(tree.data[index])
-			nnClassList = np.hstack([nnClassList, np.array(data_with_class.iloc[index][dim-1])]) #change to appropriate class column based on the dataset
+			#change to appropriate class column based on the dataset
+			if filename == "DataSets/bio_train.csv":
+				nnClassList = np.hstack([nnClassList, np.array(data_with_class.iloc[index][2])])
+			else:
+				nnClassList = np.hstack([nnClassList, np.array(data_with_class.iloc[index][dim-1])])
 		#print(nnClassList)
 		uniqw, inverse = np.unique(nnClassList, return_inverse=True)
 		#print("unique inverse ",uniqw, inverse)
 		arr = np.bincount(inverse)
 		indexOfMaxOccur = np.where(arr == max(np.bincount(inverse)))
-		newClass = uniqw[indexOfMaxOccur]
-		#print ("Assigned Class: ",newClass)
-		#print("Query_point class is: ")
-		aClass = np.array(query_point_with_class)[0][dim-1] #change to appropriate class column based on the dataset
+		newClass = uniqw[indexOfMaxOccur[0][0]]  #indexOfMaxOccur is a list of one numpyArray with newClass as its first and only element. [0] accesses, numpy array and another [0] access actual index.
+		#change to appropriate class column based on the dataset
+		if filename == "DataSets/bio_train.csv":
+			aClass = np.array(query_point_with_class)[0][2] 
+		else:
+			aClass = np.array(query_point_with_class)[0][dim-1]
 		#print(aClass)
 		if aClass == newClass:
 			rightGuessCount += 1
