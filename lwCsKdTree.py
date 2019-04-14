@@ -20,14 +20,24 @@ def generate_data(filename, m):
 
 	if filename == "DataSets/bio_train.csv":
 		dataset_df = pd.read_csv(filename,sep="\s+",header = None)
+	elif filename == "DataSets/data_kddcup04/phy_train2.csv":
+		dataset_df = pd.read_csv(filename,sep=",",header = None)
+	elif filename == "DataSets/MiniBoone.csv":
+		dataset_df = pd.read_csv(filename,sep=",")
+	elif filename == "DataSets/HTRU2/HTRU_2.xls":
+		dataset_df = pd.read_excel(filename,sep=",",header = None)
+	elif filename == "DataSets/shuttle/shuttle.xls":
+		dataset_df = pd.read_excel(filename,sep="\s+",header = None)
 	elif filename == "DataSets/default of credit card clients.xls":
 		dataset_df = pd.read_excel(filename,sep="\s+",header = 0)
 	elif filename == "DataSets/spambase/spambaseTrainTest.data":
 		dataset_df = pd.read_csv(filename,sep=",",header = None)
-
 	dim = dataset_df.shape[1]
 	rows = dataset_df.shape[0]
-	data_df = dataset_df.iloc[:rows-1000, :dim] #full data with class values
+	if filename == "DataSets/shuttle/shuttle.xls":
+		data_df = dataset_df.iloc[:rows-10000, :dim] #full data with class values, removed more rows here to avoid maximum recursion limit.
+	else:
+		data_df = dataset_df.iloc[:rows-1000, :dim] #full data with class values
 	#class_df = dataset_df.iloc[:rows-1, 0:1]
 	#print(class_df)
 	#print(data_df.head())
@@ -36,6 +46,14 @@ def generate_data(filename, m):
 	data_size = len(rows) #calculating #no. of entries in data(no. of rows)
 	if filename == "DataSets/bio_train.csv":
 		data = np.array(data_df.iloc[:,3:dim]) # choosing dataset without class
+	elif filename == "DataSets/data_kddcup04/phy_train2.csv":
+		data = np.array(data_df.iloc[:,2:dim]) # choosing dataset without class
+	elif filename == "DataSets/MiniBoone.csv":
+		data = np.array(data_df.iloc[:,:dim-1])
+	elif filename == "DataSets/HTRU2/HTRU_2.xls":
+		data = np.array(data_df.iloc[:,:dim-1]) # choosing dataset without class column
+	elif filename == "DataSets/shuttle/shuttle.xls":
+		data = np.array(data_df.iloc[:,:dim-1]) # choosing dataset without class column
 	elif filename == "DataSets/default of credit card clients.xls":
 		data = np.array(data_df.iloc[:,1:dim-1]) # choosing dataset without class column
 	elif filename == "DataSets/spambase/spambaseTrainTest.data":
@@ -93,6 +111,18 @@ if __name__ == "__main__":
 	if filename == "DataSets/bio_train.csv":
 		data = data_with_class.iloc[:,3:dim] #data without class variable
 		df = pd.read_csv(filename,sep="\s+")
+	elif filename == "DataSets/data_kddcup04/phy_train2.csv":
+		data = data_with_class.iloc[:,2:dim] #data without class variable
+		df = pd.read_csv(filename,sep=",")
+	elif filename == "DataSets/MiniBoone.csv":
+		data = data_with_class.iloc[:,:dim-1] #data without class variable
+		df = pd.read_csv(filename,sep=",")
+	elif filename == "DataSets/HTRU2/HTRU_2.xls":
+		data = data_with_class.iloc[:,:dim-1] #data without class variable
+		df = pd.read_excel(filename,sep=",")
+	elif filename == "DataSets/shuttle/shuttle.xls":
+		data = data_with_class.iloc[:,:dim-1] #data without class variable
+		df = pd.read_excel(filename,sep="\s+")
 	elif filename == "DataSets/default of credit card clients.xls":
 		data = data_with_class.iloc[:,1:dim-1] #data without class variable
 		df = pd.read_excel(filename,sep="\s+")
@@ -116,6 +146,14 @@ if __name__ == "__main__":
 		#building tree based on given points_list and leaf_size
 		if filename == "DataSets/bio_train.csv":
 			query_point = np.array(query_point_with_class.iloc[:,3:dim]) # using query_point without class variable
+		elif filename == "DataSets/data_kddcup04/phy_train2.csv":
+			query_point = np.array(query_point_with_class.iloc[:,2:dim]) # using query_point without class variable
+		elif filename == "DataSets/MiniBoone.csv":
+			query_point = np.array(query_point_with_class.iloc[:,:dim-1]) # using query_point without class variable
+		elif filename == "DataSets/HTRU2/HTRU_2.xls":
+			query_point = np.array(query_point_with_class.iloc[:,:dim-1]) # using query_point without class variable
+		elif filename == "DataSets/shuttle/shuttle.xls":
+			query_point = np.array(query_point_with_class.iloc[:,:dim-1]) # using query_point without class variable
 		elif filename == "DataSets/default of credit card clients.xls":
 			query_point = np.array(query_point_with_class.iloc[:,1:dim-1]) # using query_point without class variable
 		elif filename == "DataSets/spambase/spambaseTrainTest.data":
@@ -132,9 +170,11 @@ if __name__ == "__main__":
 		for index in indices[0]:
 			#change to appropriate class column based on the dataset
 			if filename == "DataSets/bio_train.csv":
-				nnClassList = np.hstack([nnClassList, np.array(data_with_class.iloc[index][2])])
+				nnClassList = np.hstack([nnClassList, np.array(data_with_class.iloc[index][2])]) #colm 2 is class here.
+			elif filename == "DataSets/data_kddcup04/phy_train2.csv":
+				nnClassList = np.hstack([nnClassList, np.array(data_with_class.iloc[index][1])]) #col 1 represents class here.
 			else:
-				nnClassList = np.hstack([nnClassList, np.array(data_with_class.iloc[index][dim-1])])
+				nnClassList = np.hstack([nnClassList, np.array(data_with_class.iloc[index][dim-1])]) #last colmn represents class here.
 		#print(nnClassList)
 		uniqw, inverse = np.unique(nnClassList, return_inverse=True)
 		#print("unique inverse ",uniqw, inverse)
@@ -143,9 +183,11 @@ if __name__ == "__main__":
 		newClass = uniqw[indexOfMaxOccur[0][0]]  #indexOfMaxOccur is a list of one numpyArray with newClass as its first and only element. [0] accesses, numpy array and another [0] access actual index.
 		#change to appropriate class column based on the dataset
 		if filename == "DataSets/bio_train.csv":
-			aClass = np.array(query_point_with_class)[0][2] 
+			aClass = np.array(query_point_with_class)[0][2] #col 2 represents class here.
+		elif filename == "DataSets/data_kddcup04/phy_train2.csv":
+			aClass = np.array(query_point_with_class)[0][1] #col 1 represents class here.
 		else:
-			aClass = np.array(query_point_with_class)[0][dim-1]
+			aClass = np.array(query_point_with_class)[0][dim-1] # last col of data represents class here.
 		#print(aClass)
 		if aClass == newClass:
 			rightGuessCount += 1
