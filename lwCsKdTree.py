@@ -88,12 +88,14 @@ def generate_data(filename, m):
 	#print(class_df)
 	#dataset.to_csv("//home//oseen//Documents//Mtech_project//code2_KDDdata2004//light_bio_train1.csv",index=False)
 	#sorting result
-	sorted_data = data_df.sort_values('weight_value',ascending='False')
+	#sorted_data = data_df.sort_values('weight_value',ascending='False')
 	#sorted_class = class_df.sort_values('weight_value',ascending='False')
 	#print(sorted_data.iloc[:m,:dim])
 	#print(sorted_class.iloc[:m,:dim-1])
 	#print(sorted_class.iloc[13])
-	return sorted_data.iloc[:m,:dim]
+	sampled_points = data_df.sample(n=m, frac=None, replace=False, weights='weight_value', random_state=None, axis=None)
+	return sampled_points.iloc[:,:dim]
+	#return sorted_data.iloc[:m,:dim]
 
 
 
