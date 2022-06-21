@@ -1,5 +1,5 @@
 anaconda==0.0.1.1
-numpy==1.16.1
+numpy==1.22.0
 pandas==0.24.1
 python-dateutil==2.8.0
 pytz==2018.9
